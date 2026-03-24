@@ -1,7 +1,12 @@
 package com.example.umcspringbootstudy.global.apiPayload.exception;
 
+import com.example.umcspringbootstudy.global.apiPayload.code.BaseErrorCode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public class GeneralException extends RuntimeException {
-  public GeneralException(String message) {
-    super(message);
-  }
+
+    private final BaseErrorCode code;
 }
