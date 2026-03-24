@@ -1,6 +1,5 @@
-package com.example.umcspringbootstudy.post.entity;
-
-import com.example.umcspringbootstudy.user.entity.User;
+package com.example.umcspringbootstudy.user.entity;
+import com.example.umcspringbootstudy.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,23 +13,29 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@Table(name = "post")
+@Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
-public class Post {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
+    @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "title", nullable = false)
-    private String title;
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
 
-    @Column(name = "content", nullable = false)
-    private String content;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)
