@@ -1,5 +1,6 @@
-package com.example.umcspringbootstudy.post.entity;
+package com.example.umcspringbootstudy.comment.entity;
 
+import com.example.umcspringbootstudy.post.entity.Post;
 import com.example.umcspringbootstudy.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,19 +15,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@Table(name = "post")
+@Table(name = "comment")
 @EntityListeners(AuditingEntityListener.class)
-public class Post {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
+    @Column(name = "comment_id")
     private Long id;
-
-    @Column(name = "title", nullable = false)
-    private String title;
 
     @Column(name = "content", nullable = false)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -37,11 +39,10 @@ public class Post {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public void update(String title, String content) {
-        this.title = title;
+    public void update(String content) {
         this.content = content;
     }
 }
