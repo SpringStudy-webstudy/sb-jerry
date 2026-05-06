@@ -1,4 +1,5 @@
 package com.example.umcspringbootstudy.user.entity;
+import com.example.umcspringbootstudy.global.auth.enums.Role;
 import com.example.umcspringbootstudy.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,9 @@ public class User {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)

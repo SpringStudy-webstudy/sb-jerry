@@ -21,3 +21,10 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+
+
+jwt:
+  token:
+    secretKey: ${JWT_SECRET}
+    expiration:
+      access: 14400000
