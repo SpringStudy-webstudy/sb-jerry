@@ -15,7 +15,7 @@ Spring Boot로 REST API를 만들어보는 스터디 프로젝트입니다.
 - Docker
 - Railway
 
-## 구현한 기능
+## 구현 기능
 
 ### 회원
 
