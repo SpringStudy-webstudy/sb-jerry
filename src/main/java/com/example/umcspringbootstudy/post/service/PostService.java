@@ -1,26 +1,35 @@
 package com.example.umcspringbootstudy.post.service;
 
 import com.example.umcspringbootstudy.global.apiPayload.exception.GeneralException;
-import com.example.umcspringbootstudy.post.dto.PostDetailResponseDto;
+import com.example.umcspringbootstudy.post.dto.*;
 import com.example.umcspringbootstudy.post.exception.code.PostErrorCode;
-import com.example.umcspringbootstudy.post.dto.PostRequestDto;
-import com.example.umcspringbootstudy.post.dto.PostResponseDto;
-import com.example.umcspringbootstudy.post.dto.PostUpdateRequestDto;
 import com.example.umcspringbootstudy.post.entity.Post;
 import com.example.umcspringbootstudy.post.repository.PostRepository;
 import com.example.umcspringbootstudy.user.entity.User;
 import com.example.umcspringbootstudy.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     @Transactional
     public PostResponseDto createPost(PostRequestDto request) {
@@ -89,16 +98,52 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDetailResponseDto> getPosts() {
-        return postRepository.findAll()
-                .stream()
-                .map(post -> new PostDetailResponseDto(
-                        post.getId(),
-                        post.getTitle(),
-                        post.getContent(),
-                        post.getUser().getNickname(),
-                        post.getCreatedAt()
-                ))
+    public PostListResponseDto getPosts(int page, int size, String sortBy,
+                                        String keyword,
+                                        LocalDateTime startDate, LocalDateTime endDate) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
+        Page<Post> postPage = postRepository.searchPosts(keyword, startDate, endDate, pageable);
+
+        stopWatch.stop();
+        log.info("[JPA] getPosts 실행 시간: {}ms", stopWatch.getTotalTimeMillis());
+
+        return PostListResponseDto.from(postPage);
+    }
+
+    @Transactional(readOnly = true)
+    public PostListResponseDto getPostsQueryDsl(int page, int size, String sortBy,
+                                                String keyword,
+                                                LocalDateTime startDate, LocalDateTime endDate) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
+        Page<Post> postPage = postRepository.searchPostsQueryDsl(keyword, startDate, endDate, pageable);
+
+        stopWatch.stop();
+        log.info("[QueryDSL] getPostsQueryDsl 실행 시간: {}ms", stopWatch.getTotalTimeMillis());
+
+        return PostListResponseDto.from(postPage);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> explainPosts() {
+        String sql = "EXPLAIN SELECT * FROM post ORDER BY created_at DESC";
+        List<Object[]> rows = entityManager.createNativeQuery(sql).getResultList();
+        String[] columns = {"id", "select_type", "table", "partitions", "type",
+                "possible_keys", "key", "key_len", "ref", "rows", "filtered", "Extra"};
+
+        return rows.stream()
+                .map(row -> {
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    for (int i = 0; i < columns.length; i++) {
+                        map.put(columns[i], row[i]);
+                    }
+                    return map;
+                })
                 .toList();
     }
 }

@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@Table(name = "post")
+@Table(name = "post", indexes = {
+        @Index(name = "idx_post_created_at", columnList = "created_at")
+})
 @EntityListeners(AuditingEntityListener.class)
 public class Post {
     @Id

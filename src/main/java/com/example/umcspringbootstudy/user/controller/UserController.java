@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "유저 API", description = "회원가입/로그인 관련 API")
 @RestController
@@ -31,5 +28,12 @@ public class UserController {
     @PostMapping("/login")
     public ApiResponse<UserResponseDTO.LoginDTO> login(@Valid @RequestBody UserRequestDTO.LoginDTO dto){
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, userService.login(dto));
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "유저의 댓글, 게시글, 계정을 모두 삭제합니다.")
+    @DeleteMapping("/{userId}")
+    public ApiResponse<Void> withdraw(@PathVariable Long userId) {
+        userService.withdraw(userId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, null);
     }
 }

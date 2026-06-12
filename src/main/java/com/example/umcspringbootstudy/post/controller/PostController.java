@@ -2,10 +2,7 @@ package com.example.umcspringbootstudy.post.controller;
 
 import com.example.umcspringbootstudy.global.apiPayload.ApiResponse;
 import com.example.umcspringbootstudy.global.apiPayload.code.GeneralSuccessCode;
-import com.example.umcspringbootstudy.post.dto.PostDetailResponseDto;
-import com.example.umcspringbootstudy.post.dto.PostRequestDto;
-import com.example.umcspringbootstudy.post.dto.PostResponseDto;
-import com.example.umcspringbootstudy.post.dto.PostUpdateRequestDto;
+import com.example.umcspringbootstudy.post.dto.*;
 import com.example.umcspringbootstudy.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Tag(
         name = "게시판 API",
@@ -66,12 +65,37 @@ public class PostController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, postService.updatePost(postId, userId, request));
     }
 
-    @Operation(
-            summary = "게시글 목록 조회",
-            description = "게시글 목록을 조회합니다."
-    )
+    @Operation(summary = "게시글 목록 조회", description = "페이징/정렬을 지원합니다.")
     @GetMapping("/lists")
-    public ApiResponse<List<PostDetailResponseDto>> getPosts() {
-        return ApiResponse.onSuccess(GeneralSuccessCode.OK, postService.getPosts());
+    public ApiResponse<PostListResponseDto> getPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDateTime endDate
+    ) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK,
+                postService.getPosts(page, size, sortBy, keyword, startDate, endDate));
+    }
+
+    @Operation(summary = "게시글 목록 조회 (QueryDSL)", description = "QueryDSL 방식으로 검색/페이징을 지원합니다.")
+    @GetMapping("/lists/querydsl")
+    public ApiResponse<PostListResponseDto> getPostsQueryDsl(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDateTime endDate
+    ) {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK,
+                postService.getPostsQueryDsl(page, size, sortBy, keyword, startDate, endDate));
+    }
+
+    @Operation(summary = "게시글 조회 EXPLAIN", description = "created_at 인덱스 사용 여부를 EXPLAIN으로 확인합니다.")
+    @GetMapping("/explain")
+    public ApiResponse<List<Map<String, Object>>> explainPosts() {
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, postService.explainPosts());
     }
 }
