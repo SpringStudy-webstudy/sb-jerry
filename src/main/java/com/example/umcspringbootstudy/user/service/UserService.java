@@ -1,9 +1,11 @@
 package com.example.umcspringbootstudy.user.service;
 
+import com.example.umcspringbootstudy.comment.repository.CommentRepository;
 import com.example.umcspringbootstudy.global.apiPayload.exception.GeneralException;
 import com.example.umcspringbootstudy.global.auth.CustomUserDetails;
 import com.example.umcspringbootstudy.global.auth.enums.Role;
 import com.example.umcspringbootstudy.global.auth.jwt.JwtUtil;
+import com.example.umcspringbootstudy.post.repository.PostRepository;
 import com.example.umcspringbootstudy.user.dto.UserRequestDTO;
 import com.example.umcspringbootstudy.user.dto.UserResponseDTO;
 import com.example.umcspringbootstudy.user.entity.User;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -70,5 +74,15 @@ public class UserService {
                 .memberId(user.getId())
                 .accessToken(accessToken)
                 .build();
+    }
+
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(UserErrorCode.USER_NOT_FOUND));
+
+        commentRepository.deleteAllByUserId(userId);
+        postRepository.deleteAllByUserId(userId);
+        userRepository.delete(user);
     }
 }
